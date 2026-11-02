@@ -1,0 +1,412 @@
+[
+{
+"id": "mercury",
+"name": "Mercury",
+"kind": "Planet",
+"group": "inner",
+"radiusKm": 2439.4,
+"file": "packs/mercury.json",
+"layers": [
+"Free-air gravity",
+"Geoid",
+"Visible colour"
+],
+"mb": 2.7
+},
+{
+"id": "venus",
+"name": "Venus",
+"kind": "Planet",
+"group": "inner",
+"radiusKm": 6051.8,
+"file": "packs/venus.json",
+"layers": [
+"Free-air gravity",
+"Geoid",
+"Surface map"
+],
+"mb": 2.2
+},
+{
+"id": "earth",
+"name": "Earth",
+"kind": "Planet",
+"group": "inner",
+"radiusKm": 6371.0,
+"file": "packs/earth.json",
+"layers": [
+"Topography",
+"Gravity disturbance",
+"Geoid"
+],
+"mb": 6.2
+},
+{
+"id": "moon",
+"name": "Moon",
+"kind": "Moon of Earth",
+"group": "inner",
+"radiusKm": 1737.151,
+"file": "packs/moon.json",
+"layers": [
+"Topography",
+"Free-air gravity",
+"Bouguer gravity",
+"Selenoid",
+"Visible colour"
+],
+"mb": 10.6
+},
+{
+"id": "mars",
+"name": "Mars",
+"kind": "Planet",
+"group": "inner",
+"radiusKm": 3389.5,
+"file": "packs/mars.json",
+"layers": [
+"Topography",
+"Free-air gravity",
+"Bouguer gravity",
+"Areoid",
+"Imagery"
+],
+"mb": 5.4
+},
+{
+"id": "phobos",
+"name": "Phobos",
+"kind": "Moon of Mars",
+"group": "inner",
+"radiusKm": 12.9,
+"file": "packs/phobos.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.6
+},
+{
+"id": "deimos",
+"name": "Deimos",
+"kind": "Moon of Mars",
+"group": "inner",
+"radiusKm": 8.0,
+"file": "packs/deimos.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.4
+},
+{
+"id": "jupiter",
+"name": "Jupiter",
+"kind": "Giant planet",
+"group": "jupiter",
+"radiusKm": 69904.5,
+"file": "packs/jupiter.json",
+"layers": [
+"Cloud tops"
+],
+"mb": 0.3
+},
+{
+"id": "io",
+"name": "Io",
+"kind": "Moon of Jupiter",
+"group": "jupiter",
+"radiusKm": 1821.6,
+"file": "packs/io.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.3
+},
+{
+"id": "europa",
+"name": "Europa",
+"kind": "Moon of Jupiter",
+"group": "jupiter",
+"radiusKm": 1560.8,
+"file": "packs/europa.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.3
+},
+{
+"id": "ganymede",
+"name": "Ganymede",
+"kind": "Moon of Jupiter",
+"group": "jupiter",
+"radiusKm": 2634.1,
+"file": "packs/ganymede.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.3
+},
+{
+"id": "callisto",
+"name": "Callisto",
+"kind": "Moon of Jupiter",
+"group": "jupiter",
+"radiusKm": 2410.3,
+"file": "packs/callisto.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.8
+},
+{
+"id": "saturn",
+"name": "Saturn",
+"kind": "Giant planet",
+"group": "saturn",
+"radiusKm": 58232.0,
+"file": "packs/saturn.json",
+"layers": [
+"Cloud tops"
+],
+"mb": 0.1
+},
+{
+"id": "mimas",
+"name": "Mimas",
+"kind": "Moon of Saturn",
+"group": "saturn",
+"radiusKm": 206.6,
+"file": "packs/mimas.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.4
+},
+{
+"id": "enceladus",
+"name": "Enceladus",
+"kind": "Moon of Saturn",
+"group": "saturn",
+"radiusKm": 252.1,
+"file": "packs/enceladus.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.5
+},
+{
+"id": "tethys",
+"name": "Tethys",
+"kind": "Moon of Saturn",
+"group": "saturn",
+"radiusKm": 531.0,
+"file": "packs/tethys.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.5
+},
+{
+"id": "dione",
+"name": "Dione",
+"kind": "Moon of Saturn",
+"group": "saturn",
+"radiusKm": 561.4,
+"file": "packs/dione.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.5
+},
+{
+"id": "rhea",
+"name": "Rhea",
+"kind": "Moon of Saturn",
+"group": "saturn",
+"radiusKm": 764.0,
+"file": "packs/rhea.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.5
+},
+{
+"id": "titan",
+"name": "Titan",
+"kind": "Moon of Saturn",
+"group": "saturn",
+"radiusKm": 2574.7,
+"file": "packs/titan.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.2
+},
+{
+"id": "hyperion",
+"name": "Hyperion",
+"kind": "Moon of Saturn",
+"group": "saturn",
+"radiusKm": 180.9,
+"file": "packs/hyperion.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.4
+},
+{
+"id": "iapetus",
+"name": "Iapetus",
+"kind": "Moon of Saturn",
+"group": "saturn",
+"radiusKm": 734.3,
+"file": "packs/iapetus.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.4
+},
+{
+"id": "uranus",
+"name": "Uranus",
+"kind": "Giant planet",
+"group": "uranus",
+"radiusKm": 25359.1,
+"file": "packs/uranus.json",
+"layers": [
+"Cloud tops"
+],
+"mb": 0.0
+},
+{
+"id": "miranda",
+"name": "Miranda",
+"kind": "Moon of Uranus",
+"group": "uranus",
+"radiusKm": 235.8,
+"file": "packs/miranda.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.1
+},
+{
+"id": "ariel",
+"name": "Ariel",
+"kind": "Moon of Uranus",
+"group": "uranus",
+"radiusKm": 578.9,
+"file": "packs/ariel.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.1
+},
+{
+"id": "umbriel",
+"name": "Umbriel",
+"kind": "Moon of Uranus",
+"group": "uranus",
+"radiusKm": 582.4,
+"file": "packs/umbriel.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.2
+},
+{
+"id": "titania",
+"name": "Titania",
+"kind": "Moon of Uranus",
+"group": "uranus",
+"radiusKm": 788.4,
+"file": "packs/titania.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.2
+},
+{
+"id": "oberon",
+"name": "Oberon",
+"kind": "Moon of Uranus",
+"group": "uranus",
+"radiusKm": 761.4,
+"file": "packs/oberon.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.1
+},
+{
+"id": "neptune",
+"name": "Neptune",
+"kind": "Giant planet",
+"group": "neptune",
+"radiusKm": 24601.1,
+"file": "packs/neptune.json",
+"layers": [
+"Cloud tops"
+],
+"mb": 0.1
+},
+{
+"id": "triton",
+"name": "Triton",
+"kind": "Moon of Neptune",
+"group": "neptune",
+"radiusKm": 1353.4,
+"file": "packs/triton.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.2
+},
+{
+"id": "ceres",
+"name": "Ceres",
+"kind": "Dwarf planet",
+"group": "dwarf",
+"radiusKm": 469.7,
+"file": "packs/ceres.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.8
+},
+{
+"id": "vesta",
+"name": "Vesta",
+"kind": "Asteroid",
+"group": "dwarf",
+"radiusKm": 262.7,
+"file": "packs/vesta.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.7
+},
+{
+"id": "pluto",
+"name": "Pluto",
+"kind": "Dwarf planet",
+"group": "dwarf",
+"radiusKm": 1188.3,
+"file": "packs/pluto.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.3
+},
+{
+"id": "charon",
+"name": "Charon",
+"kind": "Moon of Pluto",
+"group": "dwarf",
+"radiusKm": 606.0,
+"file": "packs/charon.json",
+"layers": [
+"Colour map"
+],
+"mb": 0.2
+}
+]
