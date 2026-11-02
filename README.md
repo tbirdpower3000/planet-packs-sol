@@ -2,6 +2,12 @@
 
 **This is not my data.** None of the maps, gravity models, images or coordinates in this repository were made by me, and I make no claim of ownership over them. They were produced by NASA, ESA, JPL, USGS, the IAU and the researchers and artists credited below. This repository holds reformatted copies of their published work, so that the Planetary Modeling Atlas (a personal, non-commercial viewer) can load it from the web.
 
+## The atlas
+
+`index.html` is the Planetary Modeling Atlas itself (v18), built with Claude. With GitHub Pages turned on it runs at **https://tbirdpower3000.github.io/planet-packs-sol/** and loads the planet packs from this repository. Opened from there in Chrome, hand control (your camera) and Earth's live flights and satellites can work too, which they can't on claude.ai.
+
+The live layers come straight from their providers in your browser, not from this repository: aircraft from the [OpenSky Network](https://opensky-network.org) and satellite orbits from [CelesTrak](https://celestrak.org). The same "not my data" applies to them.
+
 ## What was changed
 
 The files were converted by an AI assistant (Claude) into a single JSON format per world. Grids were resampled to 0.25° or 0.5° and stored as 16-bit integers. Gravity maps for Mars, Venus and Mercury were computed from the published spherical-harmonic models with SHTOOLS. Images were resized to 2048 × 1024 pixels, and a few dark ones were brightened for display. These copies are lower in resolution than the originals and were not checked by the original authors. **For any real use, go to the original sources.**
