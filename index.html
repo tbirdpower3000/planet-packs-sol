@@ -222,7 +222,7 @@ pre.schema{margin:0;font-family:var(--mono);font-size:.74rem;line-height:1.45;ba
         <span id="mapDate">–</span><span id="mapAim" hidden></span><span id="mapAcc" title="Which JPL orbital elements are in use, and their stated error">–</span>
         <div class="seg" role="group" aria-label="Time warp" id="warp"><button type="button" data-w="-36525" aria-pressed="false" title="Backward, 100 years per second">◀◀ 100 yr/s</button><button type="button" data-w="-365.25" aria-pressed="false" title="Backward, 1 year per second">◀ 1 yr/s</button><button type="button" data-w="0" aria-pressed="false" title="Pause">⏸</button><button type="button" data-w="1.1574074074074073e-05" aria-pressed="true" title="Real time: the clock runs at its true speed, so Earth turns once a day and the planets barely move">▶ Real time</button><button type="button" data-w="1" aria-pressed="false">1 day/s</button><button type="button" data-w="30" aria-pressed="false">1 month/s</button><button type="button" data-w="365.25" aria-pressed="false">1 yr/s</button><button type="button" data-w="36525" aria-pressed="false" title="Forward, 100 years per second">100 yr/s ▶▶</button></div>
         <label class="yearpick" for="mapYear">Year<input id="mapYear" type="range" min="-2999" max="2999" step="1" value="2026"></label>
-        <button type="button" id="mapNow">Today</button><button type="button" id="mapInner" class="mapOnly">Inner planets</button><button type="button" id="mapAll" class="mapOnly">Whole system</button><button type="button" id="mapHand" aria-pressed="false" title="Steer the view with your hand, using your computer's camera">✋ Hand control</button>
+        <button type="button" id="mapNow">Today</button><button type="button" id="mapAxes" aria-pressed="true" title="Show each body's axis of spin: reddish end north, blue end south">Spin axes</button><button type="button" id="mapInner" class="mapOnly">Inner planets</button><button type="button" id="mapAll" class="mapOnly">Whole system</button><button type="button" id="mapHand" aria-pressed="false" title="Steer the view with your hand, using your computer's camera">✋ Hand control</button>
       </div>
     </div>
     <p class="note orbitnote">Planet orbits and positions come from JPL's approximate orbital elements (Standish): Table 1 for 1800–2050, and Table 2, with its extra terms for the giant planets, from 3000 BC to AD 3000. JPL gives the Table 2 errors in longitude as about 20″ for Mercury up to 40′ for Uranus. The planets can't be placed this way before 3000 BC: the Solar System is chaotic, so it takes a full numerical integration, and exact positions are lost entirely after tens of millions of years. Dates use the proleptic Gregorian calendar, and 1 BC is followed by AD 1. Pluto, Ceres and Vesta use single-epoch elements, so their positions are approximate, more so far from today. Moon orbits are drawn as circles at their true sizes, tilted by each planet's axial tilt as an approximation of the real planes; their positions along the orbit are illustrative. Body sizes are not to scale.</p>
@@ -236,6 +236,7 @@ pre.schema{margin:0;font-family:var(--mono);font-size:.74rem;line-height:1.45;ba
     <label class="tgroup"><input id="featT" type="checkbox" checked> Feature names</label>
     <label class="tgroup"><input id="namesT" type="checkbox"> All site names</label>
     <label class="tgroup" title="Light the globe from the Sun's true direction at the date shown"><input id="sunT" type="checkbox" checked> Sunlight</label>
+    <label class="tgroup" title="Show the axis the world spins around: reddish end north, blue end south"><input id="axisT" type="checkbox" checked> Spin axis</label>
     <label class="tgroup" title="Turn the globe at its real rotation rate on the viewer's clock"><input id="spinT" type="checkbox" checked> Spin</label>
     <span id="ptToggles" class="toolbar" style="gap:10px 18px"></span>
     <span id="liveT" class="toolbar" style="gap:10px 18px" hidden><label class="tgroup" title="Aircraft in flight right now, from the OpenSky Network, refreshed about every 90 seconds and moved along their heading in between"><input id="liveFl" type="checkbox"> ✈ Live flights</label><label class="tgroup" title="Satellites placed from CelesTrak orbital elements with the SGP4 model, at the date shown on the map"><input id="liveSat" type="checkbox"> 🛰 Satellites</label><select id="liveSatG" aria-label="Which satellites"><option value="stations">Space stations</option><option value="visual">Brightest</option><option value="gps-ops">GPS</option><option value="starlink">Starlink</option></select><span id="liveMsg" class="note" aria-live="polite"></span></span>
@@ -420,20 +421,38 @@ float h1(vec2 st){vec4 t=texture2D(uH,st);return (t.r*65280.+t.g*255.)/65535.;}
 float hgt(vec2 uv){vec2 q=uv*uHsz-.5;vec2 f=fract(q);vec2 b=(floor(q)+.5)/uHsz;vec2 dx=vec2(1./uHsz.x,0.),dy=vec2(0.,1./uHsz.y);
   return mix(mix(h1(b),h1(b+dx),f.x),mix(h1(b+dy),h1(b+dx+dy),f.x),f.y);}`;
 const mat=new THREE.ShaderMaterial({uniforms:{map:{value:texture},uH:{value:null},uHsz:{value:new THREE.Vector2(1,1)},uHasH:{value:0},uHk:{value:0},uHmin:{value:0},uHr:{value:1},uRm:{value:1},
-    uSun:{value:0},uSunL:{value:new THREE.Vector3(1,0,0)},uAmb:{value:.16},uShade:{value:3}},
-  vertexShader:GLSL_H+`uniform float uHasH,uHk,uHmin,uHr;varying vec2 vUv;varying vec3 vN;
-    void main(){vUv=uv;vN=normalize(position);vec3 p=position;if(uHasH>.5)p*=1.+uHk*(uHmin+uHr*hgt(uv));gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);}`,
-  fragmentShader:GLSL_H+`uniform sampler2D map;uniform vec3 uSunL;uniform float uSun,uAmb,uShade,uHasH,uHr,uRm;varying vec2 vUv;varying vec3 vN;
+    uSun:{value:0},uSunL:{value:new THREE.Vector3(1,0,0)},uAmb:{value:.16},uShade:{value:3},uNight:{value:null},uNightOn:{value:0},uNightSelf:{value:0},uClear:{value:null},uCloudOn:{value:0},uRim:{value:0}},
+  vertexShader:GLSL_H+`uniform float uHasH,uHk,uHmin,uHr;varying vec2 vUv;varying vec3 vN,vV,vVN;
+    void main(){vUv=uv;vN=normalize(position);vec3 p=position;if(uHasH>.5)p*=1.+uHk*(uHmin+uHr*hgt(uv));vec4 mv=modelViewMatrix*vec4(p,1.);vV=normalize(mv.xyz);vVN=normalize(normalMatrix*vN);gl_Position=projectionMatrix*mv;}`,
+  fragmentShader:GLSL_H+`uniform sampler2D map,uNight,uClear;uniform vec3 uSunL;uniform float uSun,uAmb,uShade,uHasH,uHr,uRm,uNightOn,uNightSelf,uCloudOn,uRim;varying vec2 vUv;varying vec3 vN,vV,vVN;
+    // city lights: a warm sodium glow with whiter cores where they're brightest
+    vec3 glow(vec3 c,vec3 h){float l=dot(c,vec3(.3,.5,.2)),b=dot(h,vec3(.3,.5,.2));return vec3(1.,.79,.46)*pow(l,1.1)*2.4+vec3(1.,.96,.88)*pow(l,3.)*1.6+vec3(1.,.66,.3)*b*1.5;}   // core, white-hot centres, and a soft halo from a blurred copy
     void main(){vec3 col=texture2D(map,vUv).rgb;
+      // the Night lights layer on its own: glowing cities over faintly moonlit continents
+      if(uNightSelf>.5){gl_FragColor=vec4(texture2D(uNight,vUv).rgb*vec3(.08,.11,.17)+glow(col,texture2D(map,vUv,3.5).rgb),1.);return;}
       if(uSun>.5){vec3 n0=normalize(vN),n=n0;
         if(uHasH>.5){float cl=max(sqrt(1.-n0.y*n0.y),.05);vec2 du=vec2(1./uHsz.x,0.),dv=vec2(0.,1./uHsz.y);
           float sE=(hgt(vUv+du)-hgt(vUv-du))*uHr*uHsz.x/(2.*6.2831853*uRm*cl)*uShade;
           float sN=(hgt(vUv+dv)-hgt(vUv-dv))*uHr*uHsz.y/(2.*3.1415927*uRm)*uShade;
           vec3 e=normalize(vec3(n0.z,0.,-n0.x)+vec3(1e-6));vec3 no=cross(n0,e);n=normalize(n0-sE*e-sN*no);}
-        float term=smoothstep(-.06,.12,dot(n0,uSunL)),dif=max(dot(n,uSunL),0.);
-        col*=uAmb+(1.-uAmb)*term*clamp(.12+1.05*dif,0.,1.2);}
+        float sd=dot(n0,uSunL),term=smoothstep(-.06,.12,sd),dif=max(dot(n,uSunL),0.);
+        if(uNightOn>.5){
+          // Earth's colour views by night, Black Marble style: the land and clouds dimmed to moonlit blue,
+          // warm cities glowing through gaps in the clouds, and an orange band along the dusk line
+          vec3 alb=col;float lum=dot(alb,vec3(.3,.59,.11));
+          vec3 moon=mix(vec3(lum),alb,.25)*vec3(.36,.52,1.)*.15+vec3(.003,.006,.016);
+          vec3 lit=alb*clamp(.12+1.05*dif,0.,1.2);
+          float tw=smoothstep(-.06,.04,sd)*(1.-smoothstep(.04,.28,sd));lit*=mix(vec3(1.),vec3(1.3,.72,.48),tw*.7);
+          col=mix(moon,lit,term);
+          float cloud=uCloudOn>.5?clamp((lum-dot(texture2D(uClear,vUv).rgb,vec3(.3,.59,.11)))*2.2,0.,1.):0.;
+          col+=glow(texture2D(uNight,vUv).rgb,texture2D(uNight,vUv,3.5).rgb)*(1.-smoothstep(-.12,.02,sd))*(1.-.7*cloud);}
+        else col*=uAmb+(1.-uAmb)*term*clamp(.12+1.05*dif,0.,1.2);}
+      // a thin blue atmosphere at the edge, brighter on the day side
+      if(uRim>0.){float r=1.-max(dot(-vV,normalize(vVN)),0.),sdl=uSun>.5?dot(normalize(vN),uSunL):1.;col+=vec3(.32,.58,1.)*pow(r,3.)*uRim*(.15+.85*smoothstep(-.25,.35,sdl));}
       gl_FragColor=vec4(col,1.);}`});
 const globe=new THREE.Mesh(geom,mat);globe.frustumCulled=false;world.add(globe);
+let AXES=true;const axSync=[];window.AXES_SET=v=>{AXES=v;axSync.forEach(f=>f(v));};
+const gAxis=axisMesh(1.6,false);gAxis.renderOrder=2;world.add(gAxis);   // spin axis: y is the pole in the globe's own frame
 function setMap(t){mat.uniforms.map.value=t;}
 let GSTARS=null;
 // stars behind the globe, matching the Solar System view so the hand-off between them is invisible
@@ -491,12 +510,18 @@ function paint(d){const bake=SH&&!(SUN&&ELEV),key=P.id+'|'+d.id+'|'+(bake?1:0);
 function legend(d){const c=$('legend'),x=c.getContext('2d'),cm=cmapFor(d);for(let i=0;i<c.width;i++){const col=cm(d.min+(d.max-d.min)*i/(c.width-1));x.fillStyle=`rgb(${col.map(Math.round).join(',')})`;x.fillRect(i,0,1,c.height);}
   const ticks=d.ticks&&d.ticks.length?d.ticks:[d.min,(d.min+d.max)/2,d.max];
   $('ticks').innerHTML=ticks.map(t=>`<span style="left:${((t-d.min)/(d.max-d.min)*100).toFixed(2)}%">${(+t).toLocaleString('en-US',{maximumFractionDigits:1})}</span>`).join('');}
+// the night side: colour views of a world with a night-lights image show its cities after dark; the night layer itself borrows the day map, dimly
+function imgTexOf(im){if(imgTex[im.id])return Promise.resolve(imgTex[im.id]);return loadImg(im.src).then(el=>{const t=new THREE.Texture(el);t.anisotropy=4;t.needsUpdate=true;imgTex[im.id]=t;return t;});}
+function nightFor(im){const u=mat.uniforms,ims=P.images||[],nt=ims.find(x=>x.id==='night'),day=ims.find(x=>x.id==='vis');u.uNightOn.value=0;u.uNightSelf.value=0;u.uCloudOn.value=0;u.uAmb.value=.16;u.uRim.value=P&&P.id==='earth'?.9:0;
+  if(im&&im.id==='visc'&&day)imgTexOf(day).then(t=>{if(layer!==im.id)return;u.uClear.value=t;u.uCloudOn.value=1;}).catch(()=>{});
+  if(!im||!nt)return;const self=im.id==='night',other=self?day:nt;if(!other)return;
+  imgTexOf(other).then(t=>{if(layer!==im.id)return;u.uNight.value=t;if(self)u.uNightSelf.value=1;else{u.uNightOn.value=1;u.uAmb.value=.07;}}).catch(()=>{});}
 function setLayer(id){layer=id;document.querySelectorAll('#layerSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===id));
   const d=(P.grids||[]).find(g=>g.id===id),im=(P.images||[]).find(g=>g.id===id),lg=$('legend'),tk=$('ticks');
-  if(d){lg.hidden=false;tk.hidden=false;setMap(texture);paint(d);legend(d);
+  if(d){nightFor(null);lg.hidden=false;tk.hidden=false;setMap(texture);paint(d);legend(d);
     $('legT').textContent=`${d.label} (${d.unit})`;$('legN').textContent=d.note||'';$('cap').textContent=`${P.name} · ${d.label}`;}
   else if(im){lg.hidden=true;tk.hidden=true;$('legT').textContent=im.label;$('legN').textContent=im.note||'';$('cap').textContent=`${P.name} · ${im.label}`;
-    const use=t=>setMap(t);
+    const use=t=>setMap(t);nightFor(im);
     if(imgTex[im.id])use(imgTex[im.id]);else loadImg(im.src).then(el=>{const t=new THREE.Texture(el);t.anisotropy=4;t.needsUpdate=true;imgTex[im.id]=t;if(layer===im.id)use(t);}).catch(()=>{$('legN').textContent='This image could not be read.';});}}
 // ---------- markers ----------
 function spriteTex(shape,color){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.lineJoin='round';
@@ -702,7 +727,7 @@ $('saveBtn').onclick=()=>{const p=Object.assign({},P);delete p.custom;const b=ne
 // ---------- spin and sunlight ----------
 // IAU 2015 rotation models from NASA NAIF pck00011.tpc: pole RA, its rate per century, pole Dec, its rate, prime meridian W0, rate per day.
 // Ceres and Vesta use the final Dawn orientations; Charon shares Pluto's pole; Hyperion tumbles chaotically and is not spun.
-const ROT={mercury:[281.0103,-0.0328,61.4155,-0.0049,329.5988,6.1385108],venus:[272.76,0,67.16,0,160.20,-1.4813688],earth:[0,-0.641,90,-0.557,190.147,360.9856235],
+const ROT={sun:[286.13,0,63.87,0,84.176,14.1844],mercury:[281.0103,-0.0328,61.4155,-0.0049,329.5988,6.1385108],venus:[272.76,0,67.16,0,160.20,-1.4813688],earth:[0,-0.641,90,-0.557,190.147,360.9856235],
  moon:[269.9949,0.0031,66.5392,0.0130,38.3213,13.17635815],mars:[317.269202,-0.10927547,54.432516,-0.05827105,176.049863,350.891982443297],
  phobos:[317.67071657,-0.10844326,52.88627266,-0.06134706,35.18774440,1128.84475928],deimos:[316.65705808,-0.10518014,53.50992033,-0.05979094,79.39932954,285.16188899],
  jupiter:[268.056595,-0.006499,64.495303,0.002413,284.95,870.5360000],io:[268.05,-0.009,64.50,0.003,200.39,203.4889538],europa:[268.08,-0.009,64.51,0.003,36.022,101.3747235],
@@ -738,6 +763,7 @@ function sunAndSpin(t){const u=mat.uniforms;if(!P||!window.SIMJD){u.uSun.value=0
   if(sd){SUNB=sd.clone().applyAxisAngle(new THREE.Vector3(0,1,0),-world.rotation.y);u.uSunL.value.copy(SUNB);u.uSun.value=1;}else{u.uSun.value=0;SUNB=o?sunScene(P.id,jd,o):null;if(SUNB)SUNB.applyAxisAngle(new THREE.Vector3(0,1,0),-world.rotation.y);}}
 $('sunT').onchange=e=>{SUN=e.target.checked;if(P&&layer)setLayer(layer);};
 $('spinT').onchange=e=>{SPIN=e.target.checked;};
+$('axisT').onchange=e=>window.AXES_SET(e.target.checked);axSync.push(v=>{gAxis.visible=v;$('axisT').checked=v;});
 // ---------- frame loop ----------
 const v3=new THREE.Vector3();
 function project(p,el,cond){if(!cond||!p){el.hidden=true;return;}const wp=toWorld(p),n=wp.clone().normalize(),cd=camera.position.clone().normalize();if(n.dot(cd)<.15){el.hidden=true;return;}
@@ -805,6 +831,13 @@ function landOut(){const r0=stage.getBoundingClientRect(),c0=r0.top+r0.height/2,
   if(window.MAP_PLACE&&P)window.MAP_PLACE(v.multiplyScalar(k*(P.eqRadiusKm||P.radiusKm)/149597870.7),q);
   const r1=msBox.getBoundingClientRect();window.scrollBy(0,r1.top+r1.height/2-c0);}
 const handOut=landOut;
+// a body's north pole (IAU), as a direction in the Solar System map's axes
+function poleMap(id,jd){const o=orient(id,jd);if(!o)return null;const D=Math.PI/180,eps=23.4392911*D,a=o.ra*D,d=o.dec*D,x=Math.cos(d)*Math.cos(a),y=Math.cos(d)*Math.sin(a),z=Math.sin(d);
+  return new THREE.Vector3(x,-y*Math.sin(eps)+z*Math.cos(eps),-(y*Math.cos(eps)+z*Math.sin(eps))).normalize();}
+window.POLE_MAP=poleMap;
+function axisMesh(len,over){const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,-len,0),new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,0),new THREE.Vector3(0,len,0)]);
+  g.setAttribute('color',new THREE.Float32BufferAttribute([.45,.62,1, .45,.62,1, 1,.5,.42, 1,.5,.42],3));
+  const l=new THREE.LineSegments(g,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.9,depthTest:!over,depthWrite:false}));l.frustumCulled=false;return l;}
 // the rotation taking the globe's frame (pole up, x toward its equator's node) onto the map's: match the pole and the Sun's direction
 const qT=new THREE.Quaternion(),mE=new THREE.Matrix4(),mF=new THREE.Matrix4();
 function tiltFor(id,jd){const o=orient(id,jd),h=window.HELIO?window.HELIO(id,jd):null;if(!o||!h)return null;const sG=sunScene(id,jd,o);if(!sG)return null;
@@ -954,6 +987,15 @@ const VIEWS={globe:{name:'the globe',cam:camera,ctl:controls,stage,el:renderer.d
  window.MAP_TAKE=on=>{mco.enabled=true;if(on&&focusId)mco.target.copy(posOf(focusId));};
  window.MAP_FOV=()=>mcam.fov;
  window.MAP_SHOWN=()=>{visible=true;};
+ const AX={};let axT=0;
+ function axes(){if(!AXES){Object.values(AX).forEach(l=>l.visible=false);return;}const now=performance.now(),fresh=now-axT>500;if(fresh)axT=now;
+   const ids=['sun',...Object.keys(B)];
+   for(const id of ids){const on=id==='sun'||B[id].sprite.visible,pos=id==='sun'?new THREE.Vector3():B[id].pos;
+     if(!AX[id]){if(!ROT[id])continue;AX[id]=axisMesh(1,true);msc.add(AX[id]);AX[id].userData.pole=null;}
+     const l=AX[id];l.visible=on&&!(window.SYNC_STATE&&id===focusId);if(!l.visible)continue;
+     if(fresh||!l.userData.pole){const pl=window.POLE_MAP(id,jd);if(pl){l.userData.pole=pl;l.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),pl);}}
+     l.position.copy(pos);l.scale.setScalar(mcam.position.distanceTo(pos)*.045);}}
+ axSync.push(v=>{$('mapAxes').setAttribute('aria-pressed',v);});$('mapAxes').onclick=()=>window.AXES_SET(!AXES);
  window.MAP_PLACE=(v,q)=>{glide=null;mco.enabled=true;if(focusId)mco.target.copy(posOf(focusId));mcam.position.copy(mco.target).add(v);mcam.quaternion.copy(q);mco.update();};
  window.MAP_APPROACH=id=>{if(!B[id])return;const info=INDEX.find(x=>x.id===id),R=(P&&P.id===id?(P.eqRadiusKm||P.radiusKm):info&&info.radiusKm)||3000;
    focus(id,false);if(glide){glide.toD=3.9*R/AU;glide.dur=RM()?1:1800;}};
@@ -1014,7 +1056,7 @@ const VIEWS={globe:{name:'the globe',cam:camera,ctl:controls,stage,el:renderer.d
    else if(focusId){const p=posOf(focusId),dlt=p.clone().sub(mco.target);mco.target.add(dlt);mcam.position.add(dlt);}   // ride along with the focused body
    mco.update();
    const SY=window.SYNC_STEP?window.SYNC_STEP(mcam,focusId,posOf(focusId||'sun'),t,!!glide,ms.clientHeight):null;window.SYNC_STATE=SY;
-   mr.render(msc,mcam);
+   axes();mr.render(msc,mcam);
    const cd=mcam.position.distanceTo(mco.target);
    Object.entries(B).forEach(([id,b])=>{let on=true;if(b.kind==='moon'){const par=b.parent,near=mcam.position.distanceTo(B[par].pos)<MOG[par].max*40;on=near;}b.sprite.visible=on;mlabel(b.pos,b.label,on&&(b.kind!=='moon'||cd<MOG[b.parent].max*14||id===focusId));});
    Object.entries(MOG).forEach(([par,m])=>m.g.visible=mcam.position.distanceTo(B[par].pos)<m.max*60);

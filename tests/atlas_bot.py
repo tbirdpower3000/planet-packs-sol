@@ -55,7 +55,10 @@ REC = '''window.BOT={log:[],last:null,n:{}};
  const s=window.atlasDive(),g=V.globe.cam,m=V.map.cam,gl=g.position.length(),ang=s==='map'?g.quaternion.angleTo(m.quaternion)*57.2958:0;
  const bx=document.getElementById(s==='landed'?'stage':'mapStage').getBoundingClientRect(),px=bx.height/2/Math.tan(g.fov*Math.PI/360)/gl;
  const e={s,gl,px,cy:bx.top+bx.height/2,H:bx.height,fov:g.fov};const L=BOT.last;
- if(L&&L.s!==e.s)BOT.log.push({from:L.s,to:e.s,px0:L.px,px1:e.px,cy0:L.cy,cy1:e.cy,ang:e.ang,gl0:L.gl,gl1:e.gl,H0:L.H,H1:e.H,f0:L.fov,f1:e.fov});
+ const dm=window.atlasMapDbg().d;if(s==='map'){BOT.rau=dm/gl;BOT.mh=bx.height;BOT.mf=m.fov;}
+ // at a landing the map's camera stays where the switch happened, so compare the globe with what the map showed at that exact spot
+ const px0=L&&L.s==='map'&&e.s==='landed'&&BOT.rau?BOT.mh/2/Math.tan(BOT.mf*Math.PI/360)/(dm/BOT.rau):L&&L.px;
+ if(L&&L.s!==e.s)BOT.log.push({from:L.s,to:e.s,px0,px1:e.px,cy0:L.cy,cy1:e.cy,ang:e.ang,gl0:L.gl,gl1:e.gl,H0:L.H,H1:e.H,f0:L.fov,f1:e.fov});
  if(s==='map'&&ang>.5){BOT.n.ang=(BOT.n.ang||0)+1;}
  BOT.last=e;})();'''
 
