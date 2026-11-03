@@ -1,0 +1,36 @@
+name: Atlas test bot
+
+# Runs the bot whenever the atlas or the packs change, once a week to catch the live-data sources changing,
+# and whenever you press "Run workflow" on the Actions tab.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '23 14 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the browser
+        run: |
+          pip install playwright==1.48.0
+          python -m playwright install --with-deps chromium
+      - name: Run the bot
+        run: python tests/atlas_bot.py
+      - name: Keep the screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-bot-output
+          path: bot-output/
