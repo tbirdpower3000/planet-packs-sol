@@ -213,7 +213,7 @@ pre.schema{margin:0;font-family:var(--mono);font-size:.74rem;line-height:1.45;ba
 
 <div class="wrap">
 <header>
-  <div class="hrow"><h1>Planetary Modeling Atlas <span class="ver" title="Version v19, 2 Nov 2026">v19</span></h1><p>Pick a world on the map or below. Drag to turn, scroll or pinch to zoom, click a site to fly to it. ✋ Hand control opens a full-screen view.</p></div>
+  <div class="hrow"><h1>Planetary Modeling Atlas <span class="ver" title="Version v19, 2 Nov 2026">v19</span></h1><p>Pick a world on the map or below. Drag to turn, scroll or pinch to zoom, click a site to fly to it. ✋ Hand control (on a planet's globe) opens a full-screen view.</p></div>
   <p class="ainote" role="note"><b>Generated with AI.</b> Built with Claude from the published data listed under each world's sources. Not independently reviewed, so check any number you rely on against the original source.</p>
   <section class="mapbox" aria-labelledby="mapH">
     <div class="maphead"><h2 id="mapH">Solar System</h2><p class="note">Click a planet or moon to fly to it. Double-click it, or press Land on globe, to land on it. Scrolling only zooms. Drag to turn, scroll or pinch to zoom.</p></div>
@@ -222,7 +222,7 @@ pre.schema{margin:0;font-family:var(--mono);font-size:.74rem;line-height:1.45;ba
         <span id="mapDate">–</span><span id="mapAim" hidden></span><span id="mapAcc" title="Which JPL orbital elements are in use, and their stated error">–</span>
         <div class="seg" role="group" aria-label="Time warp" id="warp"><button type="button" data-w="-36525" aria-pressed="false" title="Backward, 100 years per second">◀◀ 100 yr/s</button><button type="button" data-w="-365.25" aria-pressed="false" title="Backward, 1 year per second">◀ 1 yr/s</button><button type="button" data-w="0" aria-pressed="false" title="Pause">⏸</button><button type="button" data-w="1.1574074074074073e-05" aria-pressed="true" title="Real time: the clock runs at its true speed, so Earth turns once a day and the planets barely move">▶ Real time</button><button type="button" data-w="1" aria-pressed="false">1 day/s</button><button type="button" data-w="30" aria-pressed="false">1 month/s</button><button type="button" data-w="365.25" aria-pressed="false">1 yr/s</button><button type="button" data-w="36525" aria-pressed="false" title="Forward, 100 years per second">100 yr/s ▶▶</button></div>
         <label class="yearpick" for="mapYear">Year<input id="mapYear" type="range" min="-2999" max="2999" step="1" value="2026"></label>
-        <button type="button" id="mapNow">Today</button><button type="button" id="mapAxes" aria-pressed="true" title="Show each body's axis of spin: reddish end north, blue end south">Spin axes</button><button type="button" id="mapInner" class="mapOnly">Inner planets</button><button type="button" id="mapAll" class="mapOnly">Whole system</button><button type="button" id="mapHand" aria-pressed="false" title="Steer the view with your hand, using your computer's camera">✋ Hand control</button>
+        <button type="button" id="mapNow">Today</button><button type="button" id="mapAxes" aria-pressed="true" title="Show each body's axis of spin: reddish end north, blue end south">Spin axes</button><button type="button" id="mapInner" class="mapOnly">Inner planets</button><button type="button" id="mapAll" class="mapOnly">Whole system</button><button type="button" id="mapHand" hidden aria-pressed="false" title="Steer the view with your hand, using your computer's camera">✋ Hand control</button>
       </div>
     </div>
     <p class="note orbitnote">Planet orbits and positions come from JPL's approximate orbital elements (Standish): Table 1 for 1800–2050, and Table 2, with its extra terms for the giant planets, from 3000 BC to AD 3000. JPL gives the Table 2 errors in longitude as about 20″ for Mercury up to 40′ for Uranus. The planets can't be placed this way before 3000 BC: the Solar System is chaotic, so it takes a full numerical integration, and exact positions are lost entirely after tens of millions of years. Dates use the proleptic Gregorian calendar, and 1 BC is followed by AD 1. Pluto, Ceres and Vesta use single-epoch elements, so their positions are approximate, more so far from today. Moon orbits are drawn as circles at their true sizes, tilted by each planet's axial tilt as an approximation of the real planes; their positions along the orbit are illustrative. Body sizes are not to scale.</p>
@@ -798,7 +798,7 @@ function exitFS(){if(!FS)return;FS=false;document.body.classList.remove('handfs'
   if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});}
 window.ENTER_FS=enterFS;window.EXIT_FS=exitFS;
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&FS&&window.HAND_STOP)window.HAND_STOP();});   // Esc leaves hand control too
-$('fsMap').onclick=()=>exitToMap();
+$('fsMap').onclick=()=>{if(window.HAND_STOP)window.HAND_STOP();exitToMap();};   // hand control steers the globe only, for now
 $('fsExit').onclick=()=>{if(window.HAND_STOP)window.HAND_STOP();};
 document.querySelectorAll('#fsBar [data-fw]').forEach(b=>b.onclick=()=>{const t=document.querySelector(`#warp button[data-w="${b.dataset.fw}"]`);if(t)t.click();
   document.querySelectorAll('#fsBar [data-fw]').forEach(x=>x.setAttribute('aria-pressed',x===b));});
@@ -1176,7 +1176,7 @@ boot();
  function shown(el){const r=el.getBoundingClientRect(),h=Math.max(0,Math.min(r.bottom,innerHeight)-Math.max(r.top,0)),w=Math.max(0,Math.min(r.right,innerWidth)-Math.max(r.left,0));return w*h;}
  function useView(k){if(V&&V!==VIEWS[k]){goal=null;zoomRate=0;spinRate=0;anchor=null;R.reset();R2.reset();tap0=null;lastTap=null;}V=VIEWS[k];const m=$("handMsg");if(m.parentNode!==V.stage)V.stage.appendChild(m);
    if(VIEWS.map)VIEWS.map.handOn=stream!==null&&V===VIEWS.map;}
- const showHelp=()=>{hmsg(`<b>Move your open hand</b> and the cursor follows; it snaps onto planets and buttons. <b>Pinch</b> (thumb to index finger) to press: the gold ring fills as your fingers close. ${V===VIEWS.map?'<b>Pinch a planet or moon to land on it</b>, or pinch and hold on it for half a second. ':'<b>↑ Solar System</b> at the top takes you back out. '}<b>Pinch on empty space and move</b> to turn the view. <b>Make a fist and move it up to zoom in, down to zoom out</b> (point at a planet first and it lands on it; on a globe, keep going out to rise back to the map); <b>＋ and −</b> at the top also zoom while you hold a pinch on them. Hovering on a top button for a second also presses it. <button type='button' id='handHide' class='linkish'>Hide tips</button>`);const h=$("handHide");if(h)h.addEventListener("click",()=>hmsg(""));};
+ const showHelp=()=>{hmsg(`<b>Move your open hand</b> and the cursor follows; it snaps onto planets and buttons. <b>Pinch</b> (thumb to index finger) to press: the gold ring fills as your fingers close. ${V===VIEWS.map?'<b>Pinch a planet or moon to land on it</b>, or pinch and hold on it for half a second. ':'<b>↑ Solar System</b> at the top takes you back out. '}<b>Pinch on empty space and move</b> to turn the view. <b>Make a fist and move it up to zoom in, down to zoom out</b> ; <b>＋ and −</b> at the top also zoom while you hold a pinch on them. Hovering on a top button for a second also presses it. <button type='button' id='handHide' class='linkish'>Hide tips</button>`);const h=$("handHide");if(h)h.addEventListener("click",()=>hmsg(""));};
  let ac=null,tone=null,sndOn=true;
  function audio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){ac=null;}}if(ac&&ac.state==="suspended")ac.resume();return ac;}
  function chime(up){if(!sndOn||!ac)return;const t=ac.currentTime,f0=up?880:523.25;
@@ -1199,7 +1199,7 @@ boot();
    if(d>2.2){clapOn=false;clapN=0;return;}if(clapOn)return;if(d<1.3){if(++clapN>=3&&now-clapT>1500){clapOn=true;clapT=now;together();}}else clapN=0;}
  // switching views carries hand control with you; the view you left stops responding
  function goGlobe(id){if(!VIEWS.map.has(id))return false;chord();enterGlobe(id);return true;}
- function goMap(){chime(true);exitToMap();}
+ function goMap(){chime(true);stopHand();exitToMap();}   // hand control steers the globe only for now, so going back out to the Solar System ends it
  // the viewer's mode decides what hand control steers
  window.HAND_MODE=m=>{if(!stream)return;V.stop();useView(m);setBtn(true);showHelp();};
  function together(){if(V!==VIEWS.map)return;
@@ -1303,7 +1303,7 @@ boot();
        if(!zoom0){V.stop();grabGoal();zoom0={d,r:goal.radius};chime(true);}
        const lo=V.floor||V.ctl.minDistance,hi=V.ctl.maxDistance;
        const want=zoom0.r*Math.pow(zoom0.d/Math.max(.02,d),V.floor?1.2:3);goal.radius=Math.min(hi,Math.max(lo,want));
-       if(V===VIEWS.globe&&want>hi*1.08){zoom0=null;goMap();}else if(V===VIEWS.map&&want<VIEWS.map.enterDist()&&VIEWS.map.has(VIEWS.map.focusId())){zoom0=null;goGlobe(VIEWS.map.focusId());}return;}   // the map spans a huge range, so its zoom is steeper
+       if(false){}else if(V===VIEWS.map&&want<VIEWS.map.enterDist()&&VIEWS.map.has(VIEWS.map.focusId())){zoom0=null;goGlobe(VIEWS.map.focusId());}return;}   // the map spans a huge range, so its zoom is steeper
      zoom0=null;
      if(R.mode==="idle"&&R2.mode==="idle")clapCheck(hands[0].L,hands[1].L,now);else clapN=0;return;}
    // one hand: cursor, taps and grab-to-turn
@@ -1321,7 +1321,7 @@ boot();
      cursorState("press",zoomRate<0?"Zooming in":zoomRate>0?"Zooming out":"Fist: move up or down to zoom");
      // holding at the limit carries on into the next view, like scrolling does
      if(goal&&zoomRate){const lo=V.floor||V.ctl.minDistance,hi=V.ctl.maxDistance;
-       if(V===VIEWS.globe&&zoomRate>0&&goal.radius>=hi*.99){if(!anchor.lim)anchor.lim=now;if(now-anchor.lim>500){zoomRate=0;anchor=null;toneStop();goMap();}}
+       if(false){}
        else if(V===VIEWS.map&&zoomRate<0&&(anchor.tb=anchor.body||(VIEWS.map.has(VIEWS.map.focusId())?VIEWS.map.focusId():null))){if(!anchor.zin)anchor.zin=now;
          if(now-anchor.zin>350||goal.radius<=VIEWS.map.enterDist()){const tb=anchor.tb;zoomRate=0;anchor=null;toneStop();goGlobe(tb);}}
        else{anchor.lim=0;anchor.zin=0;}}
@@ -1338,7 +1338,7 @@ boot();
      if(tap0.zoom){cursorState("press",tap0.zoom<0?"Zooming in":"Zooming out");
        // zooming past the limits carries on into the next view
        if(goal&&now-zoomHeld>700){const lo=V.floor||V.ctl.minDistance,hi=V.ctl.maxDistance;
-         if(V===VIEWS.globe&&tap0.zoom>0&&goal.radius>=hi*.99){tap0=null;zoomRate=0;goMap();}
+         if(false){}
          else if(V===VIEWS.map&&tap0.zoom<0&&goal.radius<=VIEWS.map.enterDist()&&VIEWS.map.has(VIEWS.map.focusId())){tap0=null;zoomRate=0;goGlobe(VIEWS.map.focusId());}}
        return;}
      const moved=dist(g,tap0);
