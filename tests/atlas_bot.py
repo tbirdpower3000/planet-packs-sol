@@ -118,7 +118,7 @@ async def page_bot():
             await (await pg.query_selector('#stage')).screenshot(path=str(OUT / 'earth-landed.png'))
             # Earth: live switches present, real-colour start layer
             await step('Earth shows the live-data switches', await pg.evaluate('!document.getElementById("liveT").hidden'))
-            cap = await pg.inner_text('#cap'); await step('Earth opens on its colour imagery', 'Visible colour' in cap, f'({cap})')
+            lay = await pg.inner_text('#layerSeg'); await step('Earth has its photo layers', 'Visible colour' in lay and 'Night lights' in lay)
             log = await pg.evaluate('BOT.log'); n = await pg.evaluate('BOT.n')
             for sw in log:
                 if sw['from'] == 'map' and sw['to'] == 'landed' or sw['from'] == 'landed' and sw['to'] == 'map':

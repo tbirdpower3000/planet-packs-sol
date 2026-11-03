@@ -34,3 +34,32 @@ jobs:
         with:
           name: atlas-bot-output
           path: bot-output/
+
+  # did the picture get worse? photographs each world in this version and the one before, same clock and camera, and compares
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the browser
+        run: |
+          pip install playwright==1.48.0 numpy pillow
+          python -m playwright install --with-deps chromium
+      - name: Get the version before
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -n "$BASE" ] && [ "$BASE" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BASE" 2>/dev/null; then git worktree add base "$BASE"; else git worktree add base HEAD~1 || true; fi
+      - name: Compare the pictures
+        run: |
+          if [ -f base/index.html ]; then python tests/quality_bot.py --new . --old base; else python tests/quality_bot.py --new .; fi
+      - name: Keep the pictures and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-bot-output
+          path: bot-output/quality/
