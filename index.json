@@ -37,9 +37,12 @@
 "layers": [
 "Topography",
 "Gravity disturbance",
-"Geoid"
+"Geoid",
+"Visible colour",
+"Visible colour with clouds",
+"Night lights"
 ],
-"mb": 6.2
+"mb": 7.2
 },
 {
 "id": "moon",

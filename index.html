@@ -52,9 +52,10 @@ h3{font-size:.95rem;font-weight:600;margin:0}
 #mapLabels span.aim{color:#fff;background:rgba(255,216,138,.2);outline:1px solid #ffd88a}
 #mapAim{font-size:.76rem;background:rgba(40,32,10,.85);border:1px solid #ffd88a;color:#ffe9b8;border-radius:5px;padding:4px 10px}
 /* dive: the globe takes over the box you came from */
+html,body{overflow-anchor:none}   /* the page never shifts by itself when the views swap; the swap places them */
 #stage.dv{position:absolute;inset:0;width:auto;height:auto;max-height:none;min-height:0;aspect-ratio:auto;border:0;border-radius:0;z-index:3;background:transparent}
 #stage.dv:not(.dvin),#stage.dv:not(.dvin) *{pointer-events:none!important}
-#stage.dv:not(.dvin) #toMap,#stage.dv:not(.dvin) #cap,#stage.dv:not(.dvin) #labels{visibility:hidden}
+#stage.dv #toMap,#stage.dv:not(.dvin) #cap,#stage.dv:not(.dvin) #labels{visibility:hidden}
 .mapstage.synced .mapbar{z-index:5}
 .mapstage.handed #mapCard{display:none}
 .grid.dived{grid-template-columns:minmax(0,1fr)}
@@ -212,14 +213,14 @@ pre.schema{margin:0;font-family:var(--mono);font-size:.74rem;line-height:1.45;ba
 
 <div class="wrap">
 <header>
-  <div class="hrow"><h1>Planetary Modeling Atlas <span class="ver" title="Version v18, 2 Nov 2026">v18</span></h1><p>Pick a world on the map or below. Drag to turn, scroll or pinch to zoom, click a site to fly to it. ✋ Hand control opens a full-screen view.</p></div>
+  <div class="hrow"><h1>Planetary Modeling Atlas <span class="ver" title="Version v19, 2 Nov 2026">v19</span></h1><p>Pick a world on the map or below. Drag to turn, scroll or pinch to zoom, click a site to fly to it. ✋ Hand control opens a full-screen view.</p></div>
   <p class="ainote" role="note"><b>Generated with AI.</b> Built with Claude from the published data listed under each world's sources. Not independently reviewed, so check any number you rely on against the original source.</p>
   <section class="mapbox" aria-labelledby="mapH">
-    <div class="maphead"><h2 id="mapH">Solar System</h2><p class="note">Click a planet or moon to fly to it, then keep zooming in (or double-click it) to land on its globe right here. Drag to turn, scroll or pinch to zoom.</p></div>
+    <div class="maphead"><h2 id="mapH">Solar System</h2><p class="note">Click a planet or moon to fly to it. Double-click it, or press Land on globe, to land on it. Scrolling only zooms. Drag to turn, scroll or pinch to zoom.</p></div>
     <div class="mapstage" id="mapStage"><div id="mapGl"></div><div id="mapLabels"></div><div id="mapCursor" hidden></div><div id="mapCard" hidden></div>
       <div class="mapbar">
         <span id="mapDate">–</span><span id="mapAim" hidden></span><span id="mapAcc" title="Which JPL orbital elements are in use, and their stated error">–</span>
-        <div class="seg" role="group" aria-label="Time warp" id="warp"><button type="button" data-w="-36525" aria-pressed="false" title="Backward, 100 years per second">◀◀ 100 yr/s</button><button type="button" data-w="-365.25" aria-pressed="false" title="Backward, 1 year per second">◀ 1 yr/s</button><button type="button" data-w="0" aria-pressed="true" title="Pause">⏸</button><button type="button" data-w="1" aria-pressed="false">1 day/s</button><button type="button" data-w="30" aria-pressed="false">1 month/s</button><button type="button" data-w="365.25" aria-pressed="false">1 yr/s</button><button type="button" data-w="36525" aria-pressed="false" title="Forward, 100 years per second">100 yr/s ▶▶</button></div>
+        <div class="seg" role="group" aria-label="Time warp" id="warp"><button type="button" data-w="-36525" aria-pressed="false" title="Backward, 100 years per second">◀◀ 100 yr/s</button><button type="button" data-w="-365.25" aria-pressed="false" title="Backward, 1 year per second">◀ 1 yr/s</button><button type="button" data-w="0" aria-pressed="false" title="Pause">⏸</button><button type="button" data-w="1.1574074074074073e-05" aria-pressed="true" title="Real time: the clock runs at its true speed, so Earth turns once a day and the planets barely move">▶ Real time</button><button type="button" data-w="1" aria-pressed="false">1 day/s</button><button type="button" data-w="30" aria-pressed="false">1 month/s</button><button type="button" data-w="365.25" aria-pressed="false">1 yr/s</button><button type="button" data-w="36525" aria-pressed="false" title="Forward, 100 years per second">100 yr/s ▶▶</button></div>
         <label class="yearpick" for="mapYear">Year<input id="mapYear" type="range" min="-2999" max="2999" step="1" value="2026"></label>
         <button type="button" id="mapNow">Today</button><button type="button" id="mapInner" class="mapOnly">Inner planets</button><button type="button" id="mapAll" class="mapOnly">Whole system</button><button type="button" id="mapHand" aria-pressed="false" title="Steer the view with your hand, using your computer's camera">✋ Hand control</button>
       </div>
@@ -596,7 +597,7 @@ async function usePack(pack,keepView){P=pack;world.rotation.y=0;lastW=null;FLAT=
   if(ELEV){const rel=(ed.max-ed.min)||1;exag=Math.max(1,Math.min(20,Math.round(.04*P.radiusKm*1000/rel)));}else exag=0;
   $('exag').value=exag;$('exagO').textContent=exag;$('exag').disabled=!ELEV;
   buildSites();buildPoints();displace();buildRings();buildLayerSeg();buildViews();buildReadout();bodyPanel();drawTable();
-  setLayer(P.grids.length?P.grids[0].id:P.images.length?P.images[0].id:null);
+  setLayer(P.start&&[...P.grids,...P.images].some(x=>x.id===P.start)?P.start:P.grids.length?P.grids[0].id:P.images.length?P.images[0].id:null);
   if(!P.grids.length&&!P.images.length){tctx.fillStyle='#777';tctx.fillRect(0,0,TW,TH);texture.needsUpdate=true;$('legT').textContent='No maps yet';$('legN').textContent='Add a height map or colour image below.';$('legend').hidden=true;$('ticks').hidden=true;}
   selected=null;$('selCard').innerHTML='';if(SITES.length)select(SITES[0],false);
   if(!keepView&&(!FS||MODE==='globe'))arrive();
@@ -745,6 +746,7 @@ let gVis=true;new IntersectionObserver(es=>{gVis=es[0].isIntersecting;}).observe
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(stage);resize();
 function frame(t){requestAnimationFrame(frame);
+  if(SYNC==='landed'&&P&&P.id!==LAND){LAND=P.id;tiltG.quaternion.identity();}
   if(SYNC==='map')return;   // the map is flying the camera and draws the globe itself, in the same frame
   if(fly){const k=Math.min(1,(t-fly.t0)/fly.dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;const a=fly.from.clone().normalize(),b=fly.to.clone().normalize();
     const ang=a.angleTo(b);let dir;if(ang<1e-4)dir=b;else{const s=Math.sin(ang);dir=a.multiplyScalar(Math.sin((1-e)*ang)/s).add(b.multiplyScalar(Math.sin(e*ang)/s));}
@@ -779,15 +781,30 @@ function arrive(){if(!P)return;const la=P.views&&P.views[0]?P.views[0][1]:0,lo=P
 // one camera: the globe sits over the Solar System map with a clear background and copies the map's camera, in the map's own
 // frame (the planet tilted as it really is), so zooming in on a planet carries straight on into its globe and back out again
 const gridEl=document.querySelector('.grid'),HOME={parent:stage.parentNode,next:stage.nextSibling},msBox=$('mapStage');
-let SYNC=null;   // null: apart; 'map': the map flies the camera and the globe is drawn over it; 'globe': the globe flies it and the map is drawn behind
-function syncOn(){if(DIVE)return;msBox.appendChild(stage);DIVE=msBox;stage.classList.add('dv');gridEl.classList.add('dived');msBox.classList.add('synced');
+let SYNC=null,LAND=null,WANT=null,HHOME=0;   // WANT: the world you asked to land on   // SYNC null: apart; 'map': the map flies the camera and the globe is drawn over it; 'landed': you're in the globe simulation itself
+const mapBox=document.querySelector('.mapbox');
+function syncOn(){if(DIVE)return;HHOME=stage.clientHeight||HHOME;msBox.appendChild(stage);DIVE=msBox;stage.classList.add('dv');gridEl.classList.add('dived');msBox.classList.add('synced');
   renderer.setClearColor(0x000000,0);if(GSTARS)GSTARS.visible=false;fly=null;controls.enabled=false;resize();}
-function syncOff(){SYNC=null;if(!DIVE)return;stage.classList.remove('dv','dvin');msBox.classList.remove('synced','handed');HOME.parent.insertBefore(stage,HOME.next);DIVE=null;gridEl.classList.remove('dived');
+function syncOff(){const was=SYNC;SYNC=null;LAND=null;if(mapBox.hidden){mapBox.hidden=false;}document.body.style.minHeight='';if(was==='landed'){tiltG.quaternion.identity();camera.fov=35;camera.updateProjectionMatrix();}if(!DIVE)return;stage.classList.remove('dv','dvin');msBox.classList.remove('synced','handed');HOME.parent.insertBefore(stage,HOME.next);DIVE=null;gridEl.classList.remove('dived');
   renderer.setClearColor(0x000000,1);if(GSTARS)GSTARS.visible=true;tiltG.quaternion.identity();camera.fov=35;camera.far=200;camera.position.setLength(3.9);camera.up.set(0,1,0);camera.updateProjectionMatrix();
   controls.enabled=true;controls.update();if(window.MAP_TAKE)window.MAP_TAKE(false);resize();}
 const undiveNow=syncOff;
-function handIn(){SYNC='globe';msBox.classList.add('handed');stage.classList.add('dvin');controls.enabled=true;camera.far=200;camera.updateProjectionMatrix();controls.update();}
-function handOut(){SYNC='map';msBox.classList.remove('handed');stage.classList.remove('dvin');controls.enabled=false;if(window.MAP_TAKE)window.MAP_TAKE(true);}
+function landIn(){const r0=msBox.getBoundingClientRect(),c0=r0.top+r0.height/2,Hm=r0.height,fm=camera.fov;
+  stage.classList.remove('dv','dvin');msBox.classList.remove('synced','handed');HOME.parent.insertBefore(stage,HOME.next);DIVE=null;gridEl.classList.remove('dived');
+  renderer.setClearColor(0x000000,1);if(GSTARS)GSTARS.visible=true;document.body.style.minHeight=document.documentElement.scrollHeight+'px';mapBox.hidden=true;resize();
+  // same size on screen: the globe's box and lens differ from the map's, so move the camera to make up for it
+  const Hg=stage.clientHeight||Hm,k=(Hg/Math.tan(35*Math.PI/360))/(Hm/Math.tan(fm*Math.PI/360));
+  camera.fov=35;camera.far=200;camera.updateProjectionMatrix();camera.position.setLength(Math.min(controls.maxDistance,Math.max(controls.minDistance,camera.position.length()*k)));
+  SYNC='landed';LAND=P?P.id:null;controls.enabled=true;controls.update();
+  const r1=stage.getBoundingClientRect();window.scrollBy(0,r1.top+r1.height/2-c0);}   // and in the same place: the globe's box takes over where the map's was
+const handIn=landIn;
+function landOut(){const r0=stage.getBoundingClientRect(),c0=r0.top+r0.height/2,Hg=r0.height,v=camera.position.clone(),q=camera.quaternion.clone();
+  LAND=null;SYNC=null;mapBox.hidden=false;document.body.style.minHeight='';if(window.MAP_SHOWN)window.MAP_SHOWN();syncOn();SYNC='map';
+  const Hm=msBox.clientHeight||Hg,fm=window.MAP_FOV?window.MAP_FOV():40,k=(Hm/Math.tan(fm*Math.PI/360))/(Hg/Math.tan(35*Math.PI/360));
+  if(window.MAPFOCUS&&P)window.MAPFOCUS(P.id);
+  if(window.MAP_PLACE&&P)window.MAP_PLACE(v.multiplyScalar(k*(P.eqRadiusKm||P.radiusKm)/149597870.7),q);
+  const r1=msBox.getBoundingClientRect();window.scrollBy(0,r1.top+r1.height/2-c0);}
+const handOut=landOut;
 // the rotation taking the globe's frame (pole up, x toward its equator's node) onto the map's: match the pole and the Sun's direction
 const qT=new THREE.Quaternion(),mE=new THREE.Matrix4(),mF=new THREE.Matrix4();
 function tiltFor(id,jd){const o=orient(id,jd),h=window.HELIO?window.HELIO(id,jd):null;if(!o||!h)return null;const sG=sunScene(id,jd,o);if(!sG)return null;
@@ -797,17 +814,15 @@ function tiltFor(id,jd){const o=orient(id,jd),h=window.HELIO?window.HELIO(id,jd)
   const f1=new THREE.Vector3(0,1,0),f2=sG.clone().addScaledVector(f1,-sG.dot(f1)).normalize(),f3=f1.clone().cross(f2);
   mE.makeBasis(e1,e2,e3);mF.makeBasis(f1,f2,f3).transpose();return qT.setFromRotationMatrix(mE.multiply(mF));}
 // called by the map every frame, after it has moved its camera
-window.SYNC_STEP=(mc,fid,fpos,t,gliding,boxH)=>{if(FS){if(SYNC)syncOff();return null;}
+window.SYNC_STEP=(mc,fid,fpos,t,gliding,boxH)=>{if(FS){if(SYNC)syncOff();return null;}if(SYNC==='landed')return null;
   const ok=!!(fid&&fid!=='sun'&&P&&P.id===fid&&current===fid),Rau=ok?(P.eqRadiusKm||P.radiusKm)/149597870.7:1;
   if(ok){const q=tiltFor(fid,window.SIMJD());if(q)tiltG.quaternion.copy(q);}
-  if(SYNC==='globe'){if(!ok){syncOff();return null;}
-    // the globe has the camera: put the map's camera in the same place, so the orbits and stars behind stay true
-    mc.position.copy(fpos).addScaledVector(camera.position,Rau);mc.quaternion.copy(camera.quaternion);return 'globe';}
   const d=ok?mc.position.distanceTo(fpos)/Rau:Infinity,px=ok?(boxH/2)/Math.tan(mc.fov*Math.PI/360)/d:0;   // the planet's radius on screen, in pixels
   if(!ok||px<1.5){if(SYNC)syncOff();return null;}
   if(!SYNC){syncOn();SYNC='map';}
   camera.position.copy(mc.position).sub(fpos).divideScalar(Rau);camera.quaternion.copy(mc.quaternion);camera.fov=mc.fov;camera.aspect=mc.aspect;camera.far=Math.max(200,d*2.5);camera.updateProjectionMatrix();
-  if(d<=controls.maxDistance*.85&&!gliding)handIn();   // takes over well inside the globe's zoom-out limit and hands back only at the limit, so they never fight   // close enough: the globe's own controls carry on from exactly here
+  const kE=HHOME?(HHOME/Math.tan(35*Math.PI/360))/(boxH/Math.tan(mc.fov*Math.PI/360)):1,dg=d*kE;   // where the globe's camera will be once its own box and lens take over
+  if(WANT===fid&&!gliding){WANT=null;if(dg<=controls.maxDistance*.95){landIn();return null;}}   // only a Land / double-click switches views; scrolling never does   // close enough: switch to the globe simulation; it arms again only once you've pulled back out
   gdraw(t);return SYNC;};
 window.atlasDive=()=>SYNC;
 window.PREOPEN=id=>{if(FS||current===id||!INDEX.some(x=>x.id===id))return;open(id,true);};   // build the globe while you look at the planet, so it's ready when you arrive
@@ -817,12 +832,11 @@ async function enterGlobe(id,from){if(!INDEX.some(x=>x.id===id)&&!custom.some(x=
   if(FS){await Promise.all([ready?null:open(id,true),wait(RM()?0:650)]);if(current!==id)return;setMode('globe');arrive();return;}
   // mouse: fly the shared camera in until the globe takes over
   if(DIVING)return;DIVING=true;try{if(!ready)await open(id,true);}finally{DIVING=false;}if(current!==id)return;
-  if(window.MAP_APPROACH)window.MAP_APPROACH(id);}
-function exitToMap(){if(FS){if(MODE==='map')return;setMode('map');}else if(SYNC==='globe'){handOut();if(window.MAPFOCUS&&current)window.MAPFOCUS(current);return;}else $('mapStage').scrollIntoView({behavior:RM()?'auto':'smooth',block:'center'});if(window.MAPFOCUS&&current)window.MAPFOCUS(current);}
+  WANT=id;if(window.MAP_APPROACH)window.MAP_APPROACH(id);}
+function exitToMap(){if(FS){if(MODE==='map')return;setMode('map');}else if(SYNC==='landed'){landOut();if(window.MAPFOCUS&&current)window.MAPFOCUS(current);return;}else $('mapStage').scrollIntoView({behavior:RM()?'auto':'smooth',block:'center'});if(window.MAPFOCUS&&current)window.MAPFOCUS(current);}
 function go(id){if(FS&&MODE==='map')enterGlobe(id);else open(id);}
 labels.addEventListener('wheel',e=>{e.preventDefault();renderer.domElement.dispatchEvent(new WheelEvent('wheel',e));},{passive:false});   // same for names on the globe
 // zoom through: scrolling in on a focused body lands on its globe; scrolling out past the globe rises back to the map
-renderer.domElement.addEventListener('wheel',e=>{if(e.deltaY<=0||camera.position.length()<controls.maxDistance*.99)return;if(FS&&MODE==='globe')exitToMap();else if(SYNC==='globe')handOut();},{passive:true});   // scrolling out past the globe hands the camera back to the map
 // ---------- views hand control can steer (the globe, and the map below registers itself) ----------
 const VIEWS={globe:{name:'the globe',cam:camera,ctl:controls,stage,el:renderer.domElement,stop:()=>{fly=null;},floor:1.4,
   hover(x,y){if(!P)return null;const {site}=pick({clientX:x,clientY:y});hoverSite=site;return site?site.name:null;},
@@ -907,7 +921,7 @@ const VIEWS={globe:{name:'the globe',cam:camera,ctl:controls,stage,el:renderer.d
    if(!MOG[par]){const g=new THREE.Group();g.rotation.z=(TILT[par]||0)*D2R;msc.add(g);MOG[par]={g,max:0};}
    const a=akm/AU,pts=[];for(let k=0;k<=128;k++){const t=k/128*Math.PI*2;pts.push(new THREE.Vector3(a*Math.cos(t),0,-a*Math.sin(t)));}MOG[par].g.add(orbitLine(pts,0x9fb3cc,.4));MOG[par].max=Math.max(MOG[par].max,a);});
  // time
- const jdNow=()=>Date.now()/86400000+2440587.5;let jd=jdNow(),warp=0,lastT=performance.now();
+ const jdNow=()=>Date.now()/86400000+2440587.5;let jd=jdNow(),warp=1/86400,lastT=performance.now();   // starts in real time: the planets look still, Earth turns at its true rate
  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
  const yearOf=j=>new Date((j-2440587.5)*86400000).getUTCFullYear();
  const fmtD=j=>{const d=new Date((j-2440587.5)*86400000);if(isNaN(d))return '–';const y=d.getUTCFullYear(),ys=y>0?(y<1000?'AD ':'')+y:(1-y)+' BC';return `${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${ys}`;};
@@ -938,6 +952,9 @@ const VIEWS={globe:{name:'the globe',cam:camera,ctl:controls,stage,el:renderer.d
  ml.addEventListener('wheel',e=>{e.preventDefault();mr.domElement.dispatchEvent(new WheelEvent('wheel',e));},{passive:false});   // scrolling over a name zooms the map, never the page
  window.MAPFOCUS=id=>{if(B[id])focus(id,false);};
  window.MAP_TAKE=on=>{mco.enabled=true;if(on&&focusId)mco.target.copy(posOf(focusId));};
+ window.MAP_FOV=()=>mcam.fov;
+ window.MAP_SHOWN=()=>{visible=true;};
+ window.MAP_PLACE=(v,q)=>{glide=null;mco.enabled=true;if(focusId)mco.target.copy(posOf(focusId));mcam.position.copy(mco.target).add(v);mcam.quaternion.copy(q);mco.update();};
  window.MAP_APPROACH=id=>{if(!B[id])return;const info=INDEX.find(x=>x.id===id),R=(P&&P.id===id?(P.eqRadiusKm||P.radiusKm):info&&info.radiusKm)||3000;
    focus(id,false);if(glide){glide.toD=3.9*R/AU;glide.dur=RM()?1:1800;}};
  window.atlasMapDbg=()=>({d:mcam.position.distanceTo(mco.target),v:focusId?viewDist(focusId):null,f:focusId,glide:!!glide});
@@ -978,11 +995,7 @@ const VIEWS={globe:{name:'the globe',cam:camera,ctl:controls,stage,el:renderer.d
  mr.domElement.addEventListener('pointerup',e=>{if(!mdown||Math.hypot(e.clientX-mdown[0],e.clientY-mdown[1])>5)return;const r=mr.domElement.getBoundingClientRect();mm.x=(e.clientX-r.left)/r.width*2-1;mm.y=-(e.clientY-r.top)/r.height*2+1;
    mray.setFromCamera(mm,mcam);const vis=Object.values(B).filter(b=>b.sprite.visible).map(b=>b.sprite);vis.push(sun);const h=mray.intersectObjects(vis);if(h.length)focus(h[0].object===sun?'sun':h[0].object.userData.id,true);});
  // scrolling in on a focused world lands on its globe (hand full screen, or right here with the mouse)
- let wIn={id:null,n:0,t:0};
- mr.domElement.addEventListener('wheel',e=>{if(SYNC||FS||e.deltaY>=0)return;const id=pickAt(e.clientX,e.clientY);
-   if(id&&id!=='sun'&&id!==focusId&&INDEX.some(x=>x.id===id))focus(id,true);},{passive:true});
- mr.domElement.addEventListener('wheel',e=>{if(!FS||glide||e.deltaY>=0||!focusId||focusId==='sun'||!INDEX.some(x=>x.id===focusId))return;   // hand control's full screen keeps its own zoom-through
-   if(mcam.position.distanceTo(mco.target)<=viewDist(focusId)*.45)enterGlobe(focusId,FS?null:'zoom');},{passive:true});
+ // scrolling only ever zooms; choosing a planet is a click
  mr.domElement.addEventListener('dblclick',e=>{const id=pickAt(e.clientX,e.clientY);if(id&&id!=='sun')enterGlobe(id);});
  function mresize(){const w=ms.clientWidth,h=ms.clientHeight;mr.setSize(w,h,false);mcam.aspect=w/h;mcam.updateProjectionMatrix();}
  new ResizeObserver(mresize).observe(ms);mresize();
@@ -991,7 +1004,7 @@ const VIEWS={globe:{name:'the globe',cam:camera,ctl:controls,stage,el:renderer.d
  let visible=true;new IntersectionObserver(es=>{visible=es[0].isIntersecting;}).observe(ms);
  function mframe(t){requestAnimationFrame(mframe);const dt=Math.min(.1,(t-lastT)/1000);lastT=t;setJd(jd+warp*dt);
    if(FS){$('fsDate').textContent=fmtD(jd);const fl=MODE==='map'&&focusId&&focusId!=='sun'&&INDEX.some(x=>x.id===focusId);$('fsLand').hidden=!fl;if(fl)$('fsLand').textContent='Land on '+B[focusId].name;}
-   if(!visible||(FS&&MODE!=='map'&&t>RENDER_BOTH_UNTIL))return;drawOrbits(jd);place();$('mapDate').textContent=fmtD(jd);
+   if(!visible||(FS&&MODE!=='map'&&t>RENDER_BOTH_UNTIL))return;drawOrbits(jd);place();$('mapDate').textContent=fmtD(jd)+(Math.abs(warp)<.01?' · '+new Date((jd-2440587.5)*864e5).toISOString().slice(11,16)+' UTC':'');
    const yr=yearOf(jd);if(document.activeElement!==$('mapYear'))$('mapYear').value=yr;
    $('mapAcc').textContent=useT1(jd)?'JPL Table 1 · within ~1′':'JPL Table 2 · '+(focusId&&ERR2[focusId]?focusId[0].toUpperCase()+focusId.slice(1)+' ±'+ERR2[focusId]:'±20″ to ±33′');
    // your own scrolling during the glide scales it, so zoom always responds
@@ -999,7 +1012,7 @@ const VIEWS={globe:{name:'the globe',cam:camera,ctl:controls,stage,el:renderer.d
      mco.target.copy(glide.fromT).lerp(end,e);const d=Math.exp(Math.log(glide.fromD)+(Math.log(glide.toD)-Math.log(glide.fromD))*e)*(glide.us||1);glide.lastD=d;
      const cur=mcam.position.clone().sub(mco.target).normalize().lerp(glide.dir,e*.6).normalize();mcam.position.copy(mco.target).add(cur.multiplyScalar(d));if(k>=1)glide=null;}
    else if(focusId){const p=posOf(focusId),dlt=p.clone().sub(mco.target);mco.target.add(dlt);mcam.position.add(dlt);}   // ride along with the focused body
-   if(window.SYNC_STATE!=='globe')mco.update();
+   mco.update();
    const SY=window.SYNC_STEP?window.SYNC_STEP(mcam,focusId,posOf(focusId||'sun'),t,!!glide,ms.clientHeight):null;window.SYNC_STATE=SY;
    mr.render(msc,mcam);
    const cd=mcam.position.distanceTo(mco.target);
@@ -1158,7 +1171,7 @@ boot();
    try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error("nomedia");stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:"user"},audio:false});}
    catch(e){starting=false;setBtn(false);stream=null;window.EXIT_FS();
      hmsg(window.parent!==window
-      ?"Pages on claude.ai can't use your camera. To use hand control, open a copy Claude sent you in the chat, such as <b>planetary-modeling-atlas-v18.html</b>, in Chrome on your computer and allow the camera. <button type='button' id='handX' class='linkish'>Close</button>"
+      ?"Pages on claude.ai can't use your camera. To use hand control, open a copy Claude sent you in the chat, such as <b>planetary-modeling-atlas-v19.html</b>, in Chrome on your computer and allow the camera. <button type='button' id='handX' class='linkish'>Close</button>"
       :"The camera couldn't be opened ("+esc(e&&e.name||"blocked")+"). Check that no other app is using it and that this page is allowed to use the camera, then try again. <button type='button' id='handX' class='linkish'>Close</button>");
      const x=$("handX");if(x)x.addEventListener("click",()=>hmsg(""));return;}
    const v=$("handVid");v.srcObject=stream;await v.play();$("handBox").hidden=false;hmsg("Loading hand tracking…");
