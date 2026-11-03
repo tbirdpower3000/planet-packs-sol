@@ -4,13 +4,15 @@
 
 ## The atlas
 
-`index.html` is the Planetary Modeling Atlas itself (v19), built with Claude. With GitHub Pages turned on it runs at **https://tbirdpower3000.github.io/planet-packs-sol/** and loads the planet packs from this repository. Opened from there in Chrome, hand control (your camera) and Earth's live flights and satellites can work too, which they can't on claude.ai.
+`index.html` is the Planetary Modeling Atlas itself (v20), built with Claude. With GitHub Pages turned on it runs at **https://tbirdpower3000.github.io/planet-packs-sol/** and loads the planet packs from this repository. Opened from there in Chrome, hand control (your camera) and Earth's live flights and satellites can work too, which they can't on claude.ai.
 
 The live layers come straight from their providers in your browser, not from this repository: aircraft from the [OpenSky Network](https://opensky-network.org) and satellite orbits from [CelesTrak](https://celestrak.org). The same "not my data" applies to them.
 
 ## The test bot
 
 `tests/atlas_bot.py` runs on GitHub every time the atlas or the packs change, every Monday, and whenever you press **Run workflow** on the Actions tab. It checks that every planet pack opens and decodes, then drives the page: switching between the Solar System view and the globe with the buttons and double-click, making sure scrolling never switches views, that the planet keeps its size and place at each switch, and that there are no script errors. It also asks OpenSky and CelesTrak whether a web page may read their data. The report appears on the run's summary page, with screenshots under "Artifacts".
+
+`tests/quality_bot.py` is the quality-control bot. On every change it photographs each world in the new version and the one before, at the same frozen moment and camera view with labels hidden, measures brightness, contrast, sharpness and colour, and flags anything that got darker, flatter, blurrier or duller. Side-by-side pictures are saved under "Artifacts".
 
 ## What was changed
 
