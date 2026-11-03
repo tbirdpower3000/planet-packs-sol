@@ -54,8 +54,8 @@ REC = '''window.BOT={log:[],last:null,n:{}};
 (function rec(){requestAnimationFrame(rec);const V=window.atlasViews;if(!V||!V.map||!window.atlasMapDbg)return;
  const s=window.atlasDive(),g=V.globe.cam,m=V.map.cam,gl=g.position.length(),ang=s==='map'?g.quaternion.angleTo(m.quaternion)*57.2958:0;
  const bx=document.getElementById(s==='landed'?'stage':'mapStage').getBoundingClientRect(),px=bx.height/2/Math.tan(g.fov*Math.PI/360)/gl;
- const e={s,gl,px,cy:bx.top+bx.height/2};const L=BOT.last;
- if(L&&L.s!==e.s)BOT.log.push({from:L.s,to:e.s,px0:L.px,px1:e.px,cy0:L.cy,cy1:e.cy,ang:e.ang});
+ const e={s,gl,px,cy:bx.top+bx.height/2,H:bx.height,fov:g.fov};const L=BOT.last;
+ if(L&&L.s!==e.s)BOT.log.push({from:L.s,to:e.s,px0:L.px,px1:e.px,cy0:L.cy,cy1:e.cy,ang:e.ang,gl0:L.gl,gl1:e.gl,H0:L.H,H1:e.H,f0:L.fov,f1:e.fov});
  if(s==='map'&&ang>.5){BOT.n.ang=(BOT.n.ang||0)+1;}
  BOT.last=e;})();'''
 
@@ -105,7 +105,11 @@ async def page_bot():
             await step('Scrolling in on the Solar System view stays there', await st() == 'map')
             await pg.evaluate('document.querySelector("#bodies button[data-id=earth]").click()')
             await pg.evaluate('document.getElementById("mapStage").scrollIntoView({block:"start"})')
-            t = await until('map', 30); await step('Choosing Earth from the list shows it in the Solar System view', t is not None, f'({t} s)')
+            t0 = time.time(); ok = False
+            while time.time() - t0 < 30:
+                if await pg.evaluate('window.atlasDive()==="map"&&window.atlasMapDbg().f==="earth"&&!window.atlasMapDbg().glide&&window.atlasViews.globe&&document.getElementById("bName").textContent==="Earth"'): ok = True; break
+                await pg.wait_for_timeout(250)
+            await step('Choosing Earth from the list shows it in the Solar System view', ok, f'({time.time() - t0:.1f} s)')
             bx = await ms.bounding_box(); await pg.mouse.dblclick(bx['x'] + bx['width'] / 2, bx['y'] + bx['height'] / 2)
             t = await until('landed', 30); await step('Double-click Earth lands on it', t is not None, f'({t} s)')
             await (await pg.query_selector('#stage')).screenshot(path=str(OUT / 'earth-landed.png'))
@@ -116,6 +120,7 @@ async def page_bot():
             for sw in log:
                 if sw['from'] == 'map' and sw['to'] == 'landed' or sw['from'] == 'landed' and sw['to'] == 'map':
                     size = abs(sw['px1'] / max(1e-6, sw['px0']) - 1); move = abs(sw['cy1'] - sw['cy0'])
+                    print('   switch detail', {k: (round(v, 3) if isinstance(v, float) else v) for k, v in sw.items()}, flush=True)
                     await step(f"Switch {sw['from']} → {sw['to']}: planet keeps its size and place", size < .08 and move < 4, f'(size change {size * 100:.0f}%, moved {move:.0f} px)')
             await step('The two views always agree on the camera angle', not n.get('ang'), f"({n.get('ang', 0)} frames off)")
             await step('No script errors', not errs, '; '.join(errs[:3]))
