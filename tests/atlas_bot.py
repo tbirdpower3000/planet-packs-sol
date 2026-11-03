@@ -139,7 +139,11 @@ def probe(name, url):
 
 def live():
     out = [probe('OpenSky flights', 'https://opensky-network.org/api/states/all?lamin=45.8&lomin=5.9&lamax=47.8&lomax=10.5'),   # a small box: 1 credit
-           probe('CelesTrak satellites', 'https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE')]                    # one satellite, the ISS
+           probe('CelesTrak satellites', 'https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE'),                     # one satellite, the ISS
+           # other free aircraft feeds (readsb format, a circle around a point), in case OpenSky won't serve web pages
+           probe('adsb.lol flights', 'https://api.adsb.lol/v2/point/40.7/-74.0/100'),
+           probe('adsb.fi flights', 'https://opendata.adsb.fi/api/v2/lat/40.7/lon/-74.0/dist/100'),
+           probe('airplanes.live flights', 'https://api.airplanes.live/v2/point/40.7/-74.0/100')]
     return out
 
 def report(live_rows):
